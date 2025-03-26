@@ -1,494 +1,780 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>ShopVibe</title>
-<script src="https://cdn.tailwindcss.com"></script>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Pacifico&display=swap" rel="stylesheet">
-<link href="https://cdn.jsdelivr.net/npm/remixicon@4.5.0/fonts/remixicon.css" rel="stylesheet">
-<script>
-tailwind.config = {
-theme: {
-extend: {
-colors: {
-primary: '#4F46E5',
-secondary: '#EC4899'
-},
-borderRadius: {
-'none': '0px',
-'sm': '4px',
-DEFAULT: '8px',
-'md': '12px',
-'lg': '16px',
-'xl': '20px',
-'2xl': '24px',
-'3xl': '32px',
-'full': '9999px',
-'button': '8px'
-}
-}
-}
-}
-</script>
-<style>
-:where([class^="ri-"])::before { content: "\f3c2"; }
-@keyframes bounce {
-  0%, 100% { transform: translateY(0); }
-  50% { transform: translateY(-5px); }
-}
-@keyframes fadeIn {
-  from { opacity: 0; transform: translateY(20px); }
-  to { opacity: 1; transform: translateY(0); }
-}
-.animate-bounce-slow {
-  animation: bounce 2s infinite;
-}
-.animate-fade-in {
-  animation: fadeIn 0.8s ease-out forwards;
-}
-.cart-count {
-position: absolute;
-top: -8px;
-right: -8px;
-background: #EC4899;
-color: white;
-border-radius: 50%;
-width: 20px;
-height: 20px;
-display: flex;
-align-items: center;
-justify-content: center;
-font-size: 12px;
-}
-.cart-popup {
-display: none;
-position: absolute;
-top: 100%;
-right: 0;
-width: 320px;
-background: white;
-box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
-border-radius: 8px;
-z-index: 50;
-}
-.toast {
-position: fixed;
-bottom: 20px;
-right: 20px;
-padding: 16px 24px;
-background: #4F46E5;
-color: white;
-border-radius: 8px;
-display: none;
-animation: slideIn 0.3s ease-out;
-}
-@keyframes slideIn {
-from { transform: translateX(100%); }
-to { transform: translateX(0); }
-}
-</style>
-</head>
-<body class="bg-gray-50">
-<header class="fixed top-0 left-0 right-0 bg-white shadow-sm z-50">
-<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-<div class="flex items-center justify-between h-16">
-<div class="flex items-center">
-<a href="#" class="text-2xl font-['Pacifico'] text-primary hover:scale-105 transition-transform duration-300">ShopVibe</a>
-</div>
-<div class="flex-1 max-w-2xl mx-8">
-<div class="relative">
-<input type="text" placeholder="Search products..." class="w-full px-4 py-2 pl-10 pr-4 rounded-full border-2 border-gray-200 focus:outline-none focus:border-primary text-sm">
-<div class="absolute left-3 top-0 h-full flex items-center">
-<i class="ri-search-line text-gray-400"></i>
-</div>
-</div>
-</div>
-<div class="flex items-center space-x-6">
-<div class="relative cursor-pointer" id="cartIcon">
-<div class="w-8 h-8 flex items-center justify-center">
-<i class="ri-shopping-cart-line text-xl"></i>
-</div>
-<span class="cart-count">0</span>
-<div class="cart-popup" id="cartPopup">
-<div class="p-4">
-<div class="flex justify-between items-center mb-4">
-<h3 class="font-semibold">Cart</h3>
-<span class="text-sm text-gray-500">3 items</span>
-</div>
-<div class="space-y-3 mb-4">
-<div class="flex items-center gap-3">
-<img src="https://public.readdy.ai/ai/img_res/c93e91531ec7790e9f0ccd2b86524102.jpg" class="w-16 h-16 object-cover rounded">
-<div class="flex-1">
-<h4 class="text-sm font-medium">Fashion Sneakers</h4>
-<p class="text-sm text-gray-500">$ 89.99 × 1</p>
-</div>
-<button class="text-gray-400 hover:text-red-500">
-<i class="ri-delete-bin-line"></i>
-</button>
-</div>
-<div class="flex items-center gap-3">
-<img src="https://public.readdy.ai/ai/img_res/8169d5cae1725cb22e0f1237cc35c19d.jpg" class="w-16 h-16 object-cover rounded">
-<div class="flex-1">
-<h4 class="text-sm font-medium">Leather Wallet</h4>
-<p class="text-sm text-gray-500">$ 49.99 × 1</p>
-</div>
-<button class="text-gray-400 hover:text-red-500">
-<i class="ri-delete-bin-line"></i>
-</button>
-</div>
-</div>
-<div class="border-t pt-3">
-<div class="flex justify-between mb-4">
-<span class="text-gray-600">Total</span>
-<span class="font-semibold">$ 139.98</span>
-</div>
-<button class="w-full bg-primary text-white py-2 rounded-button hover:bg-primary/90">
-Checkout
-</button>
-</div>
-</div>
-</div>
-</div>
-<div class="relative cursor-pointer" id="userIcon">
-<div class="w-8 h-8 flex items-center justify-center">
-<i class="ri-user-line text-xl"></i>
-</div>
-</div>
-</div>
-</div>
-</div>
-</header>
-<main class="mt-16">
-<section class="relative bg-gray-900 overflow-hidden">
-<div class="absolute inset-0">
-<img src="https://public.readdy.ai/ai/img_res/59e6c445104a0618dd2a743ca5a26116.jpg" class="w-full h-full object-cover opacity-50">
-</div>
-<div class="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-24">
-<div class="max-w-xl">
-<h1 class="text-4xl font-bold tracking-tight text-white sm:text-5xl lg:text-6xl">
-Spring New Arrivals
-</h1>
-<p class="mt-4 text-xl text-gray-300">
-Explore 2025 Spring Collection
-</p>
-<div class="mt-8">
-<button class="bg-white text-gray-900 px-6 py-3 rounded-button text-lg font-semibold hover:bg-gray-100 animate-bounce-slow">
-Shop Now
-</button>
-</div>
-</div>
-</div>
-</section>
-<section class="py-16 bg-white">
-<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-<h2 class="text-3xl font-bold text-gray-900 text-center mb-12">Popular Categories</h2>
-<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8 animate-fade-in">
-<a href="#" class="group">
-<div class="relative rounded-lg overflow-hidden">
-<img src="https://public.readdy.ai/ai/img_res/6213dc8fdaeb050e553c6901253378b6.jpg" class="w-full h-64 object-cover group-hover:scale-105 transition-transform duration-300">
-<div class="absolute inset-0 bg-black bg-opacity-40 flex items-center justify-center">
-<h3 class="text-white text-xl font-semibold">Women</h3>
-</div>
-</div>
-</a>
-<a href="#" class="group">
-<div class="relative rounded-lg overflow-hidden">
-<img src="https://public.readdy.ai/ai/img_res/9de75a6e88281bcf9fb0c12de884810b.jpg" class="w-full h-64 object-cover group-hover:scale-105 transition-transform duration-300">
-<div class="absolute inset-0 bg-black bg-opacity-40 flex items-center justify-center">
-<h3 class="text-white text-xl font-semibold">Men</h3>
-</div>
-</div>
-</a>
-<a href="#" class="group">
-<div class="relative rounded-lg overflow-hidden">
-<img src="https://public.readdy.ai/ai/img_res/6ecb0ee125c3510ae20c3c228fd5ca28.jpg" class="w-full h-64 object-cover group-hover:scale-105 transition-transform duration-300">
-<div class="absolute inset-0 bg-black bg-opacity-40 flex items-center justify-center">
-<h3 class="text-white text-xl font-semibold">Accessories</h3>
-</div>
-</div>
-</a>
-<a href="#" class="group">
-<div class="relative rounded-lg overflow-hidden">
-<img src="https://public.readdy.ai/ai/img_res/585636fde469d049443db0fa386dcd3c.jpg" class="w-full h-64 object-cover group-hover:scale-105 transition-transform duration-300">
-<div class="absolute inset-0 bg-black bg-opacity-40 flex items-center justify-center">
-<h3 class="text-white text-xl font-semibold">Shoes</h3>
-</div>
-</div>
-</a>
-</div>
-</div>
-</section>
-<section class="py-16 bg-gray-50">
-<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-<h2 class="text-3xl font-bold text-gray-900 text-center mb-12">Best Sellers</h2>
-<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8 animate-fade-in">
-<div class="bg-white rounded-lg shadow-sm overflow-hidden">
-<div class="relative">
-<img src="https://public.readdy.ai/ai/img_res/395aaebd521c874e736a30e0caae1271.jpg" class="w-full h-80 object-cover">
-<button class="absolute top-4 right-4 w-8 h-8 flex items-center justify-center bg-white rounded-full shadow-md hover:bg-gray-100">
-<i class="ri-heart-line text-gray-600"></i>
-</button>
-</div>
-<div class="p-4">
-<h3 class="text-lg font-medium text-gray-900">Cotton Dress</h3>
-<div class="mt-1 flex items-center">
-<div class="flex text-yellow-400">
-<i class="ri-star-fill"></i>
-<i class="ri-star-fill"></i>
-<i class="ri-star-fill"></i>
-<i class="ri-star-fill"></i>
-<i class="ri-star-half-fill"></i>
-</div>
-<span class="ml-2 text-sm text-gray-500">4.5 (128)</span>
-</div>
-<div class="mt-3 flex items-center justify-between">
-<span class="text-lg font-semibold text-gray-900">$ 59.99</span>
-<button class="bg-primary text-white px-4 py-2 rounded-button hover:bg-primary/90">
-Add to Cart
-</button>
-</div>
-</div>
-</div>
-<div class="bg-white rounded-lg shadow-sm overflow-hidden">
-<div class="relative">
-<img src="https://public.readdy.ai/ai/img_res/f00a7d345c8153e633b1838ed5f57256.jpg" class="w-full h-80 object-cover">
-<button class="absolute top-4 right-4 w-8 h-8 flex items-center justify-center bg-white rounded-full shadow-md hover:bg-gray-100">
-<i class="ri-heart-line text-gray-600"></i>
-</button>
-</div>
-<div class="p-4">
-<h3 class="text-lg font-medium text-gray-900">Leather Jacket</h3>
-<div class="mt-1 flex items-center">
-<div class="flex text-yellow-400">
-<i class="ri-star-fill"></i>
-<i class="ri-star-fill"></i>
-<i class="ri-star-fill"></i>
-<i class="ri-star-fill"></i>
-<i class="ri-star-fill"></i>
-</div>
-<span class="ml-2 text-sm text-gray-500">5.0 (89)</span>
-</div>
-<div class="mt-3 flex items-center justify-between">
-<span class="text-lg font-semibold text-gray-900">$ 199.99</span>
-<button class="bg-primary text-white px-4 py-2 rounded-button hover:bg-primary/90">
-Add to Cart
-</button>
-</div>
-</div>
-</div>
-<div class="bg-white rounded-lg shadow-sm overflow-hidden">
-<div class="relative">
-<img src="https://public.readdy.ai/ai/img_res/b69c42e45b042d5ea6d945dd89b4c1c2.jpg" class="w-full h-80 object-cover">
-<button class="absolute top-4 right-4 w-8 h-8 flex items-center justify-center bg-white rounded-full shadow-md hover:bg-gray-100">
-<i class="ri-heart-line text-gray-600"></i>
-</button>
-</div>
-<div class="p-4">
-<h3 class="text-lg font-medium text-gray-900">Elegant Heels</h3>
-<div class="mt-1 flex items-center">
-<div class="flex text-yellow-400">
-<i class="ri-star-fill"></i>
-<i class="ri-star-fill"></i>
-<i class="ri-star-fill"></i>
-<i class="ri-star-fill"></i>
-<i class="ri-star-line"></i>
-</div>
-<span class="ml-2 text-sm text-gray-500">4.0 (156)</span>
-</div>
-<div class="mt-3 flex items-center justify-between">
-<span class="text-lg font-semibold text-gray-900">$ 89.99</span>
-<button class="bg-primary text-white px-4 py-2 rounded-button hover:bg-primary/90">
-Add to Cart
-</button>
-</div>
-</div>
-</div>
-<div class="bg-white rounded-lg shadow-sm overflow-hidden">
-<div class="relative">
-<img src="https://public.readdy.ai/ai/img_res/8785fdd9d1cd9c030705716fb1b658f9.jpg" class="w-full h-80 object-cover">
-<button class="absolute top-4 right-4 w-8 h-8 flex items-center justify-center bg-white rounded-full shadow-md hover:bg-gray-100">
-<i class="ri-heart-line text-gray-600"></i>
-</button>
-</div>
-<div class="p-4">
-<h3 class="text-lg font-medium text-gray-900">Leather Handbag</h3>
-<div class="mt-1 flex items-center">
-<div class="flex text-yellow-400">
-<i class="ri-star-fill"></i>
-<i class="ri-star-fill"></i>
-<i class="ri-star-fill"></i>
-<i class="ri-star-fill"></i>
-<i class="ri-star-half-fill"></i>
-</div>
-<span class="ml-2 text-sm text-gray-500">4.5 (203)</span>
-</div>
-<div class="mt-3 flex items-center justify-between">
-<span class="text-lg font-semibold text-gray-900">$ 129.99</span>
-<button class="bg-primary text-white px-4 py-2 rounded-button hover:bg-primary/90">
-Add to Cart
-</button>
-</div>
-</div>
-</div>
-</div>
-</div>
-</section>
-<section class="py-16 bg-white">
-<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-<div class="bg-gray-900 rounded-xl overflow-hidden">
-<div class="relative">
-<img src="https://public.readdy.ai/ai/img_res/b9b0b8aa533f1e27ae9fd4af8f4a244e.jpg" class="w-full h-96 object-cover opacity-50">
-<div class="absolute inset-0 flex items-center">
-<div class="max-w-2xl mx-auto text-center px-4 animate-fade-in">
-<h2 class="text-3xl font-bold text-white mb-4">Flash Sale</h2>
-<p class="text-xl text-gray-300 mb-8">Up to 50% Off Selected Items</p>
-<div class="flex justify-center gap-8 mb-8">
-<div class="text-center">
-<div class="text-4xl font-bold text-white" id="hours">24</div>
-<div class="text-sm text-gray-400">Hours</div>
-</div>
-<div class="text-center">
-<div class="text-4xl font-bold text-white" id="minutes">00</div>
-<div class="text-sm text-gray-400">Minutes</div>
-</div>
-<div class="text-center">
-<div class="text-4xl font-bold text-white" id="seconds">00</div>
-<div class="text-sm text-gray-400">Seconds</div>
-</div>
-</div>
-<button class="bg-white text-gray-900 px-8 py-3 rounded-button text-lg font-semibold hover:bg-gray-100">
-Shop Now
-</button>
-</div>
-</div>
-</div>
-</div>
-</div>
-</section>
-<section class="py-16 bg-gray-50">
-<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-<div class="text-center mb-12">
-<h2 class="text-3xl font-bold text-gray-900">Subscribe</h2>
-<p class="mt-4 text-lg text-gray-600">Get Latest Updates & Offers</p>
-</div>
-<div class="max-w-xl mx-auto animate-fade-in">
-<form id="subscribeForm" class="flex gap-4">
-<input type="email" placeholder="Enter your email" class="flex-1 px-4 py-3 rounded-button border-2 border-gray-200 focus:outline-none focus:border-primary">
-<button type="submit" class="bg-primary text-white px-8 py-3 rounded-button hover:bg-primary/90 whitespace-nowrap">
-Subscribe Now
-</button>
-</form>
-</div>
-</div>
-</section>
-</main>
-<footer class="bg-gray-900 text-gray-400 py-12 animate-fade-in">
-<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-<div class="grid grid-cols-1 md:grid-cols-4 gap-8">
-<div>
-<h3 class="text-lg font-semibold text-white mb-4">About Us</h3>
-<ul class="space-y-2">
-<li><a href="#" class="hover:text-white">Our Story</a></li>
-<li><a href="#" class="hover:text-white">Store Locations</a></li>
-<li><a href="#" class="hover:text-white">Join Us</a></li>
-<li><a href="#" class="hover:text-white">Contact</a></li>
-</ul>
-</div>
-<div>
-<h3 class="text-lg font-semibold text-white mb-4">Customer Service</h3>
-<ul class="space-y-2">
-<li><a href="#" class="hover:text-white">Shopping Guide</a></li>
-<li><a href="#" class="hover:text-white">Payment Methods</a></li>
-<li><a href="#" class="hover:text-white">Shipping Info</a></li>
-<li><a href="#" class="hover:text-white">Returns & Exchanges</a></li>
-</ul>
-</div>
-<div>
-<h3 class="text-lg font-semibold text-white mb-4">Member Center</h3>
-<ul class="space-y-2">
-<li><a href="#" class="hover:text-white">Member Benefits</a></li>
-<li><a href="#" class="hover:text-white">Points Rules</a></li>
-<li><a href="#" class="hover:text-white">Coupons</a></li>
-<li><a href="#" class="hover:text-white">My Account</a></li>
-</ul>
-</div>
-<div>
-<h3 class="text-lg font-semibold text-white mb-4">Follow Us</h3>
-<div class="flex space-x-4">
-<a href="#" class="w-10 h-10 flex items-center justify-center rounded-full bg-gray-800 hover:bg-gray-700">
-<i class="ri-wechat-fill text-xl"></i>
-</a>
-<a href="#" class="w-10 h-10 flex items-center justify-center rounded-full bg-gray-800 hover:bg-gray-700">
-<i class="ri-weibo-fill text-xl"></i>
-</a>
-<a href="#" class="w-10 h-10 flex items-center justify-center rounded-full bg-gray-800 hover:bg-gray-700">
-<i class="ri-instagram-fill text-xl"></i>
-</a>
-</div>
-</div>
-</div>
-<div class="border-t border-gray-800 mt-12 pt-8 text-center">
-<p>© 2025 Fashion Store. All rights reserved.</p>
-</div>
-</div>
-</footer>
-<div class="toast" id="toast"></div>
-<script>
-document.addEventListener('DOMContentLoaded', function() {
-const cartIcon = document.getElementById('cartIcon');
-const cartPopup = document.getElementById('cartPopup');
-const toast = document.getElementById('toast');
-cartIcon.addEventListener('click', function(e) {
-e.stopPropagation();
-cartPopup.style.display = cartPopup.style.display === 'block' ? 'none' : 'block';
-});
-document.addEventListener('click', function(e) {
-if (!cartPopup.contains(e.target)) {
-cartPopup.style.display = 'none';
-}
-});
-const addToCartButtons = document.querySelectorAll('button');
-addToCartButtons.forEach(button => {
-if (button.textContent.trim() === '加入购物车') {
-button.addEventListener('click', function(e) {
-e.preventDefault();
-showToast('Item added to cart');
-});
-}
-});
-function showToast(message) {
-toast.textContent = message;
-toast.style.display = 'block';
-setTimeout(() => {
-toast.style.display = 'none';
-}, 3000);
-}
-const subscribeForm = document.getElementById('subscribeForm');
-subscribeForm.addEventListener('submit', function(e) {
-e.preventDefault();
-const email = this.querySelector('input[type="email"]').value;
-if (email) {
-showToast('Subscription successful!');
-this.reset();
-}
-});
-function updateCountdown() {
-const now = new Date();
-const end = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1);
-const diff = end - now;
-const hours = Math.floor(diff / (1000 * 60 * 60));
-const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
-const seconds = Math.floor((diff % (1000 * 60)) / 1000);
-document.getElementById('hours').textContent = String(hours).padStart(2, '0');
-document.getElementById('minutes').textContent = String(minutes).padStart(2, '0');
-document.getElementById('seconds').textContent = String(seconds).padStart(2, '0');
-}
-updateCountdown();
-setInterval(updateCountdown, 1000);
-});
-</script>
-</body>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>ShopVibe</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Pacifico&display=swap"
+      rel="stylesheet"
+    />
+    <link
+      href="https://cdn.jsdelivr.net/npm/remixicon@4.5.0/fonts/remixicon.css"
+      rel="stylesheet"
+    />
+    <script>
+      tailwind.config = {
+      theme: {
+      extend: {
+      colors: {
+      primary: '#4F46E5',
+      secondary: '#EC4899'
+      },
+      borderRadius: {
+      'none': '0px',
+      'sm': '4px',
+      DEFAULT: '8px',
+      'md': '12px',
+      'lg': '16px',
+      'xl': '20px',
+      '2xl': '24px',
+      '3xl': '32px',
+      'full': '9999px',
+      'button': '8px'
+      },
+      animation: {
+      'bounce-slow': 'bounce 2s infinite',
+      'fade-in': 'fadeIn 0.8s ease-out forwards',
+      'slide-in': 'slideIn 0.3s ease-out'
+      },
+      keyframes: {
+      bounce: {
+      '0%, 100%': { transform: 'translateY(0)' },
+      '50%': { transform: 'translateY(-5px)' }
+      },
+      fadeIn: {
+      'from': { opacity: '0', transform: 'translateY(20px)' },
+      'to': { opacity: '1', transform: 'translateY(0)' }
+      },
+      slideIn: {
+      'from': { transform: 'translateX(100%)' },
+      'to': { transform: 'translateX(0)' }
+      }
+      }
+      }
+      }
+    </script>
+    <style>
+      :where([class^="ri-"])::before {
+        content: "\f3c2";
+      }
+      @keyframes bounce {
+        0%,
+        100% {
+          transform: translateY(0);
+        }
+        50% {
+          transform: translateY(-5px);
+        }
+      }
+      @keyframes fadeIn {
+        from {
+          opacity: 0;
+          transform: translateY(20px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+      .animate-bounce-slow {
+        animation: bounce 2s infinite;
+      }
+      .animate-fade-in {
+        animation: fadeIn 0.8s ease-out forwards;
+      }
+      .cart-count {
+        position: absolute;
+        top: -8px;
+        right: -8px;
+        background: #ec4899;
+        color: white;
+        border-radius: 50%;
+        width: 20px;
+        height: 20px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 12px;
+      }
+      .cart-popup {
+        display: none;
+        position: absolute;
+        top: 100%;
+        right: 0;
+        width: 320px;
+        background: white;
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        border-radius: 8px;
+        z-index: 50;
+      }
+      .toast {
+        position: fixed;
+        bottom: 20px;
+        right: 20px;
+        padding: 16px 24px;
+        background: #4f46e5;
+        color: white;
+        border-radius: 8px;
+        display: none;
+        animation: slideIn 0.3s ease-out;
+      }
+      @keyframes slideIn {
+        from {
+          transform: translateX(100%);
+        }
+        to {
+          transform: translateX(0);
+        }
+      }
+    </style>
+  </head>
+  <body class="bg-gray-50">
+    <header class="fixed top-0 left-0 right-0 bg-white shadow-sm z-50">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="flex items-center justify-between h-16">
+          <div class="flex items-center">
+            <a
+              href="#"
+              class="text-2xl font-['Pacifico'] text-primary hover:scale-105 transition-transform duration-300"
+              >ShopVibe</a
+            >
+          </div>
+          <div class="flex-1 max-w-2xl mx-4 sm:mx-8">
+            <div class="relative">
+              <input
+                type="text"
+                placeholder="Search products..."
+                class="w-full px-4 py-2 pl-10 pr-4 rounded-full border-2 border-gray-200 focus:outline-none focus:border-primary text-sm"
+              />
+              <div class="absolute left-3 top-0 h-full flex items-center">
+                <i class="ri-search-line text-gray-400"></i>
+              </div>
+            </div>
+          </div>
+          <div class="flex items-center space-x-4 sm:space-x-6">
+            <div class="relative cursor-pointer group" id="cartIcon">
+              <div class="w-8 h-8 flex items-center justify-center">
+                <i class="ri-shopping-cart-line text-xl"></i>
+              </div>
+              <span
+                class="absolute -top-2 -right-2 bg-secondary text-white rounded-full w-5 h-5 flex items-center justify-center text-xs"
+                >0</span
+              >
+              <div
+                class="hidden group-hover:block absolute top-full right-0 w-72 sm:w-80 bg-white shadow-lg rounded-lg z-50"
+                id="cartPopup"
+              >
+                <div class="p-4">
+                  <div class="flex justify-between items-center mb-4">
+                    <h3 class="font-semibold">Cart</h3>
+                    <span class="text-sm text-gray-500">3 items</span>
+                  </div>
+                  <div class="space-y-3 mb-4">
+                    <div class="flex items-center gap-3">
+                      <img
+                        src="https://public.readdy.ai/ai/img_res/c93e91531ec7790e9f0ccd2b86524102.jpg"
+                        class="w-16 h-16 object-cover rounded"
+                      />
+                      <div class="flex-1">
+                        <h4 class="text-sm font-medium">Fashion Sneakers</h4>
+                        <p class="text-sm text-gray-500">$ 89.99 × 1</p>
+                      </div>
+                      <button class="text-gray-400 hover:text-red-500">
+                        <i class="ri-delete-bin-line"></i>
+                      </button>
+                    </div>
+                    <div class="flex items-center gap-3">
+                      <img
+                        src="https://public.readdy.ai/ai/img_res/8169d5cae1725cb22e0f1237cc35c19d.jpg"
+                        class="w-16 h-16 object-cover rounded"
+                      />
+                      <div class="flex-1">
+                        <h4 class="text-sm font-medium">Leather Wallet</h4>
+                        <p class="text-sm text-gray-500">$ 49.99 × 1</p>
+                      </div>
+                      <button class="text-gray-400 hover:text-red-500">
+                        <i class="ri-delete-bin-line"></i>
+                      </button>
+                    </div>
+                  </div>
+                  <div class="border-t pt-3">
+                    <div class="flex justify-between mb-4">
+                      <span class="text-gray-600">Total</span>
+                      <span class="font-semibold">$ 139.98</span>
+                    </div>
+                    <button
+                      class="w-full bg-primary text-white py-2 rounded-button hover:bg-primary/90"
+                    >
+                      Checkout
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="relative cursor-pointer" id="userIcon">
+              <div class="w-8 h-8 flex items-center justify-center">
+                <i class="ri-user-line text-xl"></i>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </header>
+    <main class="mt-16">
+      <section class="relative bg-gray-900 overflow-hidden">
+        <div class="absolute inset-0">
+          <img
+            src="https://public.readdy.ai/ai/img_res/59e6c445104a0618dd2a743ca5a26116.jpg"
+            class="w-full h-full object-cover opacity-50"
+          />
+        </div>
+        <div
+          class="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 sm:py-24"
+        >
+          <div class="max-w-xl">
+            <h1
+              class="text-3xl sm:text-4xl lg:text-6xl font-bold tracking-tight text-white"
+            >
+              Spring New Arrivals
+            </h1>
+            <p class="mt-4 text-lg sm:text-xl text-gray-300">
+              Explore 2025 Spring Collection
+            </p>
+            <div class="mt-8">
+              <button
+                class="bg-white text-gray-900 px-6 py-3 rounded-button text-lg font-semibold hover:bg-gray-100 animate-bounce-slow"
+              >
+                Shop Now
+              </button>
+            </div>
+          </div>
+        </div>
+      </section>
+      <section class="py-12 sm:py-16 bg-white">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <h2
+            class="text-2xl sm:text-3xl font-bold text-gray-900 text-center mb-8 sm:mb-12"
+          >
+            Popular Categories
+          </h2>
+          <div
+            class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-8 animate-fade-in"
+          >
+            <a href="#" class="group">
+              <div class="relative rounded-lg overflow-hidden">
+                <img
+                  src="https://public.readdy.ai/ai/img_res/6213dc8fdaeb050e553c6901253378b6.jpg"
+                  class="w-full h-48 sm:h-64 object-cover group-hover:scale-105 transition-transform duration-300"
+                />
+                <div
+                  class="absolute inset-0 bg-black bg-opacity-40 flex items-center justify-center"
+                >
+                  <h3 class="text-white text-lg sm:text-xl font-semibold">
+                    Women
+                  </h3>
+                </div>
+              </div>
+            </a>
+            <a href="#" class="group">
+              <div class="relative rounded-lg overflow-hidden">
+                <img
+                  src="https://public.readdy.ai/ai/img_res/9de75a6e88281bcf9fb0c12de884810b.jpg"
+                  class="w-full h-48 sm:h-64 object-cover group-hover:scale-105 transition-transform duration-300"
+                />
+                <div
+                  class="absolute inset-0 bg-black bg-opacity-40 flex items-center justify-center"
+                >
+                  <h3 class="text-white text-lg sm:text-xl font-semibold">
+                    Men
+                  </h3>
+                </div>
+              </div>
+            </a>
+            <a href="#" class="group">
+              <div class="relative rounded-lg overflow-hidden">
+                <img
+                  src="https://public.readdy.ai/ai/img_res/6ecb0ee125c3510ae20c3c228fd5ca28.jpg"
+                  class="w-full h-48 sm:h-64 object-cover group-hover:scale-105 transition-transform duration-300"
+                />
+                <div
+                  class="absolute inset-0 bg-black bg-opacity-40 flex items-center justify-center"
+                >
+                  <h3 class="text-white text-lg sm:text-xl font-semibold">
+                    Accessories
+                  </h3>
+                </div>
+              </div>
+            </a>
+            <a href="#" class="group">
+              <div class="relative rounded-lg overflow-hidden">
+                <img
+                  src="https://public.readdy.ai/ai/img_res/585636fde469d049443db0fa386dcd3c.jpg"
+                  class="w-full h-48 sm:h-64 object-cover group-hover:scale-105 transition-transform duration-300"
+                />
+                <div
+                  class="absolute inset-0 bg-black bg-opacity-40 flex items-center justify-center"
+                >
+                  <h3 class="text-white text-lg sm:text-xl font-semibold">
+                    Shoes
+                  </h3>
+                </div>
+              </div>
+            </a>
+          </div>
+        </div>
+      </section>
+      <section class="py-12 sm:py-16 bg-gray-50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <h2
+            class="text-2xl sm:text-3xl font-bold text-gray-900 text-center mb-8 sm:mb-12"
+          >
+            Best Sellers
+          </h2>
+          <div
+            class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-8 animate-fade-in"
+          >
+            <div class="bg-white rounded-lg shadow-sm overflow-hidden">
+              <div class="relative">
+                <img
+                  src="https://public.readdy.ai/ai/img_res/395aaebd521c874e736a30e0caae1271.jpg"
+                  class="w-full h-64 sm:h-80 object-cover"
+                />
+                <button
+                  class="absolute top-4 right-4 w-8 h-8 flex items-center justify-center bg-white rounded-full shadow-md hover:bg-gray-100"
+                >
+                  <i class="ri-heart-line text-gray-600"></i>
+                </button>
+              </div>
+              <div class="p-4">
+                <h3 class="text-base sm:text-lg font-medium text-gray-900">
+                  Cotton Dress
+                </h3>
+                <div class="mt-1 flex items-center">
+                  <div class="flex text-yellow-400">
+                    <i class="ri-star-fill"></i>
+                    <i class="ri-star-fill"></i>
+                    <i class="ri-star-fill"></i>
+                    <i class="ri-star-fill"></i>
+                    <i class="ri-star-half-fill"></i>
+                  </div>
+                  <span class="ml-2 text-sm text-gray-500">4.5 (128)</span>
+                </div>
+                <div class="mt-3 flex items-center justify-between">
+                  <span class="text-base sm:text-lg font-semibold text-gray-900"
+                    >$ 59.99</span
+                  >
+                  <button
+                    class="bg-primary text-white px-3 sm:px-4 py-2 rounded-button hover:bg-primary/90 text-sm sm:text-base"
+                  >
+                    Add to Cart
+                  </button>
+                </div>
+              </div>
+            </div>
+            <div class="bg-white rounded-lg shadow-sm overflow-hidden">
+              <div class="relative">
+                <img
+                  src="https://public.readdy.ai/ai/img_res/f00a7d345c8153e633b1838ed5f57256.jpg"
+                  class="w-full h-80 object-cover"
+                />
+                <button
+                  class="absolute top-4 right-4 w-8 h-8 flex items-center justify-center bg-white rounded-full shadow-md hover:bg-gray-100"
+                >
+                  <i class="ri-heart-line text-gray-600"></i>
+                </button>
+              </div>
+              <div class="p-4">
+                <h3 class="text-lg font-medium text-gray-900">
+                  Leather Jacket
+                </h3>
+                <div class="mt-1 flex items-center">
+                  <div class="flex text-yellow-400">
+                    <i class="ri-star-fill"></i>
+                    <i class="ri-star-fill"></i>
+                    <i class="ri-star-fill"></i>
+                    <i class="ri-star-fill"></i>
+                    <i class="ri-star-fill"></i>
+                  </div>
+                  <span class="ml-2 text-sm text-gray-500">5.0 (89)</span>
+                </div>
+                <div class="mt-3 flex items-center justify-between">
+                  <span class="text-lg font-semibold text-gray-900"
+                    >$ 199.99</span
+                  >
+                  <button
+                    class="bg-primary text-white px-4 py-2 rounded-button hover:bg-primary/90"
+                  >
+                    Add to Cart
+                  </button>
+                </div>
+              </div>
+            </div>
+            <div class="bg-white rounded-lg shadow-sm overflow-hidden">
+              <div class="relative">
+                <img
+                  src="https://public.readdy.ai/ai/img_res/b69c42e45b042d5ea6d945dd89b4c1c2.jpg"
+                  class="w-full h-80 object-cover"
+                />
+                <button
+                  class="absolute top-4 right-4 w-8 h-8 flex items-center justify-center bg-white rounded-full shadow-md hover:bg-gray-100"
+                >
+                  <i class="ri-heart-line text-gray-600"></i>
+                </button>
+              </div>
+              <div class="p-4">
+                <h3 class="text-lg font-medium text-gray-900">Elegant Heels</h3>
+                <div class="mt-1 flex items-center">
+                  <div class="flex text-yellow-400">
+                    <i class="ri-star-fill"></i>
+                    <i class="ri-star-fill"></i>
+                    <i class="ri-star-fill"></i>
+                    <i class="ri-star-fill"></i>
+                    <i class="ri-star-line"></i>
+                  </div>
+                  <span class="ml-2 text-sm text-gray-500">4.0 (156)</span>
+                </div>
+                <div class="mt-3 flex items-center justify-between">
+                  <span class="text-lg font-semibold text-gray-900"
+                    >$ 89.99</span
+                  >
+                  <button
+                    class="bg-primary text-white px-4 py-2 rounded-button hover:bg-primary/90"
+                  >
+                    Add to Cart
+                  </button>
+                </div>
+              </div>
+            </div>
+            <div class="bg-white rounded-lg shadow-sm overflow-hidden">
+              <div class="relative">
+                <img
+                  src="https://public.readdy.ai/ai/img_res/8785fdd9d1cd9c030705716fb1b658f9.jpg"
+                  class="w-full h-80 object-cover"
+                />
+                <button
+                  class="absolute top-4 right-4 w-8 h-8 flex items-center justify-center bg-white rounded-full shadow-md hover:bg-gray-100"
+                >
+                  <i class="ri-heart-line text-gray-600"></i>
+                </button>
+              </div>
+              <div class="p-4">
+                <h3 class="text-lg font-medium text-gray-900">
+                  Leather Handbag
+                </h3>
+                <div class="mt-1 flex items-center">
+                  <div class="flex text-yellow-400">
+                    <i class="ri-star-fill"></i>
+                    <i class="ri-star-fill"></i>
+                    <i class="ri-star-fill"></i>
+                    <i class="ri-star-fill"></i>
+                    <i class="ri-star-half-fill"></i>
+                  </div>
+                  <span class="ml-2 text-sm text-gray-500">4.5 (203)</span>
+                </div>
+                <div class="mt-3 flex items-center justify-between">
+                  <span class="text-lg font-semibold text-gray-900"
+                    >$ 129.99</span
+                  >
+                  <button
+                    class="bg-primary text-white px-4 py-2 rounded-button hover:bg-primary/90"
+                  >
+                    Add to Cart
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+      <section class="py-12 sm:py-16 bg-white">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div class="bg-gray-900 rounded-xl overflow-hidden">
+            <div class="relative">
+              <img
+                src="https://public.readdy.ai/ai/img_res/b9b0b8aa533f1e27ae9fd4af8f4a244e.jpg"
+                class="w-full h-64 sm:h-96 object-cover opacity-50"
+              />
+              <div class="absolute inset-0 flex items-center">
+                <div class="max-w-2xl mx-auto text-center px-4 animate-fade-in">
+                  <h2 class="text-2xl sm:text-3xl font-bold text-white mb-4">
+                    Flash Sale
+                  </h2>
+                  <p class="text-lg sm:text-xl text-gray-300 mb-6 sm:mb-8">
+                    Up to 50% Off Selected Items
+                  </p>
+                  <div class="flex justify-center gap-4 sm:gap-8 mb-6 sm:mb-8">
+                    <div class="text-center">
+                      <div
+                        class="text-3xl sm:text-4xl font-bold text-white"
+                        id="hours"
+                      >
+                        24
+                      </div>
+                      <div class="text-sm text-gray-400">Hours</div>
+                    </div>
+                    <div class="text-center">
+                      <div
+                        class="text-3xl sm:text-4xl font-bold text-white"
+                        id="minutes"
+                      >
+                        00
+                      </div>
+                      <div class="text-sm text-gray-400">Minutes</div>
+                    </div>
+                    <div class="text-center">
+                      <div
+                        class="text-3xl sm:text-4xl font-bold text-white"
+                        id="seconds"
+                      >
+                        00
+                      </div>
+                      <div class="text-sm text-gray-400">Seconds</div>
+                    </div>
+                  </div>
+                  <button
+                    class="bg-white text-gray-900 px-6 sm:px-8 py-3 rounded-button text-base sm:text-lg font-semibold hover:bg-gray-100"
+                  >
+                    Shop Now
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+      <section class="py-12 sm:py-16 bg-gray-50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div class="text-center mb-8 sm:mb-12">
+            <h2 class="text-2xl sm:text-3xl font-bold text-gray-900">
+              Subscribe
+            </h2>
+            <p class="mt-4 text-base sm:text-lg text-gray-600">
+              Get Latest Updates & Offers
+            </p>
+          </div>
+          <div class="max-w-xl mx-auto animate-fade-in">
+            <form id="subscribeForm" class="flex flex-col sm:flex-row gap-4">
+              <input
+                type="email"
+                placeholder="Enter your email"
+                class="flex-1 px-4 py-3 rounded-button border-2 border-gray-200 focus:outline-none focus:border-primary"
+              />
+              <button
+                type="submit"
+                class="bg-primary text-white px-6 sm:px-8 py-3 rounded-button hover:bg-primary/90 whitespace-nowrap"
+              >
+                Subscribe Now
+              </button>
+            </form>
+          </div>
+        </div>
+      </section>
+    </main>
+    <footer class="bg-gray-900 text-gray-400 py-8 sm:py-12 animate-fade-in">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div
+          class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 sm:gap-8"
+        >
+          <div>
+            <h3 class="text-base sm:text-lg font-semibold text-white mb-4">
+              About Us
+            </h3>
+            <ul class="space-y-2">
+              <li>
+                <a href="#" class="hover:text-white transition-colors"
+                  >Our Story</a
+                >
+              </li>
+              <li>
+                <a href="#" class="hover:text-white transition-colors"
+                  >Store Locations</a
+                >
+              </li>
+              <li>
+                <a href="#" class="hover:text-white transition-colors"
+                  >Join Us</a
+                >
+              </li>
+              <li>
+                <a href="#" class="hover:text-white transition-colors"
+                  >Contact</a
+                >
+              </li>
+            </ul>
+          </div>
+          <div>
+            <h3 class="text-base sm:text-lg font-semibold text-white mb-4">
+              Customer Service
+            </h3>
+            <ul class="space-y-2">
+              <li>
+                <a href="#" class="hover:text-white transition-colors"
+                  >Shopping Guide</a
+                >
+              </li>
+              <li>
+                <a href="#" class="hover:text-white transition-colors"
+                  >Payment Methods</a
+                >
+              </li>
+              <li>
+                <a href="#" class="hover:text-white transition-colors"
+                  >Shipping Info</a
+                >
+              </li>
+              <li>
+                <a href="#" class="hover:text-white transition-colors"
+                  >Returns & Exchanges</a
+                >
+              </li>
+            </ul>
+          </div>
+          <div>
+            <h3 class="text-base sm:text-lg font-semibold text-white mb-4">
+              Member Center
+            </h3>
+            <ul class="space-y-2">
+              <li>
+                <a href="#" class="hover:text-white transition-colors"
+                  >Member Benefits</a
+                >
+              </li>
+              <li>
+                <a href="#" class="hover:text-white transition-colors"
+                  >Points Rules</a
+                >
+              </li>
+              <li>
+                <a href="#" class="hover:text-white transition-colors"
+                  >Coupons</a
+                >
+              </li>
+              <li>
+                <a href="#" class="hover:text-white transition-colors"
+                  >My Account</a
+                >
+              </li>
+            </ul>
+          </div>
+          <div>
+            <h3 class="text-base sm:text-lg font-semibold text-white mb-4">
+              Follow Us
+            </h3>
+            <div class="flex space-x-4">
+              <a
+                href="#"
+                class="w-8 h-8 sm:w-10 sm:h-10 flex items-center justify-center rounded-full bg-gray-800 hover:bg-gray-700 transition-colors"
+              >
+                <i class="ri-wechat-fill text-lg sm:text-xl"></i>
+              </a>
+              <a
+                href="#"
+                class="w-8 h-8 sm:w-10 sm:h-10 flex items-center justify-center rounded-full bg-gray-800 hover:bg-gray-700 transition-colors"
+              >
+                <i class="ri-weibo-fill text-lg sm:text-xl"></i>
+              </a>
+              <a
+                href="#"
+                class="w-8 h-8 sm:w-10 sm:h-10 flex items-center justify-center rounded-full bg-gray-800 hover:bg-gray-700 transition-colors"
+              >
+                <i class="ri-instagram-fill text-lg sm:text-xl"></i>
+              </a>
+            </div>
+          </div>
+        </div>
+        <div
+          class="border-t border-gray-800 mt-8 sm:mt-12 pt-6 sm:pt-8 text-center"
+        >
+          <p>© 2025 Fashion Store. All rights reserved.</p>
+        </div>
+      </div>
+    </footer>
+    <div
+      class="fixed bottom-5 right-5 bg-primary text-white px-6 py-3 rounded-lg shadow-lg hidden animate-slide-in"
+      id="toast"
+    ></div>
+    // ... existing code ...
+    <script>
+      (function() {
+        document.addEventListener("DOMContentLoaded", function() {
+          const cartIcon = document.getElementById("cartIcon");
+          const cartPopup = document.getElementById("cartPopup");
+          const toast = document.getElementById("toast");
+
+          if (cartIcon && cartPopup) {
+            cartIcon.addEventListener("click", function(e) {
+              e.stopPropagation();
+              cartPopup.classList.toggle("hidden");
+            });
+
+            document.addEventListener("click", function(e) {
+              if (!cartPopup.contains(e.target) && e.target !== cartIcon) {
+                cartPopup.classList.add("hidden");
+              }
+            });
+          }
+
+          const addToCartButtons = document.querySelectorAll("button");
+          addToCartButtons.forEach(function(button) {
+            if (button.textContent.trim() === "Add to Cart") {
+              button.addEventListener("click", function(e) {
+                e.preventDefault();
+                showToast("Item added to cart");
+              });
+            }
+          });
+
+          function showToast(message) {
+            if (toast) {
+              toast.textContent = message;
+              toast.classList.remove("hidden");
+              setTimeout(function() {
+                toast.classList.add("hidden");
+              }, 3000);
+            }
+          }
+
+          const subscribeForm = document.getElementById("subscribeForm");
+          if (subscribeForm) {
+            subscribeForm.addEventListener("submit", function(e) {
+              e.preventDefault();
+              const emailInput = subscribeForm.querySelector('input[type="email"]');
+              if (emailInput && emailInput.value.trim() !== "") {
+                showToast("Subscription successful!");
+                subscribeForm.reset();
+              }
+            });
+          }
+
+          function updateCountdown() {
+            const now = new Date();
+            const end = new Date(now);
+            end.setDate(now.getDate() + 1);
+            end.setHours(0, 0, 0, 0);
+
+            const diff = end - now;
+            const hours = Math.floor(diff / (1000 * 60 * 60));
+            const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+            const seconds = Math.floor((diff % (1000 * 60)) / 1000);
+
+            const hoursElement = document.getElementById("hours");
+            const minutesElement = document.getElementById("minutes");
+            const secondsElement = document.getElementById("seconds");
+
+            if (hoursElement) hoursElement.textContent = String(hours).padStart(2, "0");
+            if (minutesElement) minutesElement.textContent = String(minutes).padStart(2, "0");
+            if (secondsElement) secondsElement.textContent = String(seconds).padStart(2, "0");
+          }
+
+          updateCountdown();
+          setInterval(updateCountdown, 1000);
+        });
+      })();
+    </script>
+    </script>
+  </body>
 </html>
